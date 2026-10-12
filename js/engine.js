@@ -110,25 +110,51 @@ window.KK = window.KK || {};
   };
 
   // Virtual joystick: push left/right to move, UP to jump (or climb), DOWN to climb down / drop
+  // Floating joystick: the base jumps to wherever the thumb lands in the left zone and is dragged
+  // along when the thumb goes past its rim, so there is no exact spot to hit. Hysteresis on every
+  // direction keeps it from flickering at the thresholds.
   KK.bindJoystick = function (base, knob) {
-    let id = null;
-    const set = (want) => {
-      for (const a of ['MOVE_LEFT', 'MOVE_RIGHT', 'UP', 'DOWN']) {
+    const box = base.parentNode;
+    let zone = document.getElementById('joyzone');
+    if (!zone) { zone = document.createElement('div'); zone.id = 'joyzone'; box.insertBefore(zone, base); }
+    let id = null, cx = 0, cy = 0, R = 1;
+    const want = { MOVE_LEFT: false, MOVE_RIGHT: false, UP: false, DOWN: false };
+    const apply = () => {
+      for (const a in want) {
         const held = Input.sources[a] && Input.sources[a].has('joy');
         if (want[a] && !held) Input.press(a, 'joy'); else if (!want[a] && held) Input.release(a, 'joy');
       }
     };
+    const place = () => { base.style.left = cx + 'px'; base.style.top = cy + 'px'; };
     const move = (e) => {
-      const r = base.getBoundingClientRect(), R = r.width / 2;
-      let dx = (e.clientX - (r.left + R)) / R, dy = (e.clientY - (r.top + R)) / R;
-      const m = Math.hypot(dx, dy); if (m > 1) { dx /= m; dy /= m; }
-      knob.style.transform = `translate(${dx * R * 0.55}px, ${dy * R * 0.55}px)`;
-      set({ MOVE_LEFT: dx < -0.32, MOVE_RIGHT: dx > 0.32, UP: dy < -0.55, DOWN: dy > 0.6 });
+      const r = box.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+      let dx = x - cx, dy = y - cy; const m = Math.hypot(dx, dy), lim = R * 1.05;
+      if (m > lim) { cx += dx * (1 - lim / m); cy += dy * (1 - lim / m); dx = x - cx; dy = y - cy; place(); }   // drag the base along
+      const ux = dx / R, uy = dy / R, k = Math.min(1, Math.hypot(ux, uy));
+      knob.style.transform = `translate(${ux * R * 0.55}px, ${uy * R * 0.55}px)`;
+      want.MOVE_LEFT = ux < (want.MOVE_LEFT ? -0.16 : -0.26);
+      want.MOVE_RIGHT = ux > (want.MOVE_RIGHT ? 0.16 : 0.26);
+      want.UP = uy < (want.UP ? -0.38 : -0.5) && k > 0.4;
+      want.DOWN = uy > (want.DOWN ? 0.42 : 0.55) && Math.abs(ux) < 0.8;
+      apply();
     };
-    const end = (e) => { if (e.pointerId !== id) return; id = null; knob.style.transform = ''; base.classList.remove('active'); set({}); };
-    base.addEventListener('pointerdown', (e) => { e.preventDefault(); id = e.pointerId; base.setPointerCapture(id); base.classList.add('active'); move(e); });
-    base.addEventListener('pointermove', (e) => { if (e.pointerId === id) move(e); });
-    base.addEventListener('pointerup', end); base.addEventListener('pointercancel', end);
+    const end = (e) => {
+      if (e.pointerId !== id) return; id = null;
+      knob.style.transform = ''; base.classList.remove('active'); base.style.left = base.style.top = '';
+      for (const a in want) want[a] = false; apply();
+    };
+    const start = (e) => {
+      if (id !== null) return;
+      e.preventDefault(); id = e.pointerId; try { zone.setPointerCapture(id); } catch (_) { }
+      const r = box.getBoundingClientRect(), br = base.getBoundingClientRect(); R = br.width / 2;
+      cx = KK.clamp(e.clientX - r.left, R * 0.7, r.width * 0.5); cy = KK.clamp(e.clientY - r.top, -r.height * 0.3, r.height - R * 0.5);
+      base.classList.add('active'); place(); move(e);
+    };
+    for (const el of [zone, base]) {
+      el.addEventListener('pointerdown', start);
+      el.addEventListener('pointermove', (e) => { if (e.pointerId === id) move(e); });
+      el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end); el.addEventListener('lostpointercapture', end);
+    }
   };
 
   // ---------------- Audio (synth placeholders) ----------------
@@ -186,6 +212,7 @@ window.KK = window.KK || {};
   // Loads every PNG found in assets/. Frames are probed in order (01.png, 1.png or "Layer 1.png") until one is missing,
   // so any number of frames works without editing code. Missing artwork falls back to the coloured shapes.
   const KEYMAP = { kofitia_habanfena: 'kofitia_palm', minionred: 'red', minionblue: 'blue', brafo: 'barafo', whiteMmoatia: 'white_mmoatia', goldMask: 'gold_mask', goldLion: 'gold_lion', goldSlime: 'gold_slime', gye: 'gye_nyame', proj_shock: 'proj_shockwave', proj_wave: 'proj_power_wave' };
+  KK.spriteKey = (k) => KEYMAP[k] || k;
   const loadImg = (src) => new Promise(r => { const im = new Image(); im.onload = () => r(im); im.onerror = () => r(null); im.src = src; });
   async function loadFrames(dir) {
     const pats = [i => String(i).padStart(2, '0') + '.png', i => i + '.png', i => 'Layer ' + i + '.png', i => 'Layer' + i + '.png'];
@@ -218,8 +245,10 @@ window.KK = window.KK || {};
         jobs.push(async () => { const im = await loadImg(`assets/objects/${n}.png`); if (im) this.images[`obj/${n}`] = im; });
       for (const n of ['crumble_platform', 'switch', 'checkpoint', 'pan_water', 'forge_fire'])
         jobs.push(async () => { const f = await loadFrames(`assets/objects/${n}/`); if (f.length) this.images[`obj/${n}`] = f; });
-      for (const n of ['kofitia', 'odade', 'samanteng', 'sasabonsam', 'barafo', 'basa', 'giant_snake', 'giant_goat', 'giant_fowl', 'giant_monkey', 'giant_panther', 'giant_whiteMmoatia', 'giant_goldMask', 'giant_goldLion', 'giant_goldSlime'])
+      for (const n of ['kofitia', 'odade', 'samanteng', 'sasabonsam', 'barafo', 'basa', 'red', 'blue', 'giant_snake', 'giant_goat', 'giant_fowl', 'giant_monkey', 'giant_panther', 'giant_whiteMmoatia', 'giant_goldMask', 'giant_goldLion', 'giant_goldSlime'])
         jobs.push(async () => { const im = await loadImg(`assets/portraits/${n}.png`); if (im) this.images[`portrait/${n}`] = im; });
+      for (const n of ['panel', 'btn', 'btn_sel', 'kente', 'icon_life', 'icon_stamina', 'icon_power', 'diamond'])
+        jobs.push(async () => { const im = await loadImg(`assets/ui/${n}.png`); if (im) this.images[`ui/${n}`] = im; });
       let done = 0; const total = jobs.length, pool = 12; let next = 0;
       const worker = async () => { while (next < total) { const j = jobs[next++]; await j(); done++; this.progress = done / total; } };
       await Promise.all(Array.from({ length: pool }, worker));

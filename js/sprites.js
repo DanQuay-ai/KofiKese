@@ -5,6 +5,7 @@
 // Put your artwork there (reference frames: kofi-kese-reference pack). Missing art = code drawing.
 // w/h = canvas size, body = character height in px on that canvas, base = baseline px above the bottom (default 24),
 // fps = frames per second for that action (default KK.SPRITE_FPS), pixel = draw without smoothing.
+// Pixel art from Adwinifie: Kofitia (tools/kofi_gen.py), everyone else (tools/cast_gen.py), giant_* = mini-bosses.
 // Kofitia: pixel art from Adwinifie (exports/kofi = gold afena, exports/kofi_palm = palm-leaf sword), x4, feet at (320,356).
 // =============================================================
 window.KK = window.KK || {};
@@ -269,381 +270,671 @@ KK.SPRITE_DEFS = {
    }
   },
   "odade": {
-   "w": 384,
-   "h": 384,
+   "w": 448,
+   "h": 480,
    "body": 208,
+   "base": 24,
+   "pixel": true,
    "anims": {
     "idle": {
-     "loop": true
+     "loop": true,
+     "fps": 8
     },
     "hammer": {
-     "loop": true
+     "loop": true,
+     "fps": 10
     },
     "talk": {
-     "loop": true
+     "loop": true,
+     "fps": 8
     },
     "give": {
-     "loop": false
+     "loop": false,
+     "fps": 10
     }
    }
   },
   "basa": {
-   "w": 384,
-   "h": 512,
+   "w": 448,
+   "h": 496,
    "body": 240,
+   "base": 24,
+   "pixel": true,
    "anims": {
     "idle": {
-     "loop": true
+     "loop": true,
+     "fps": 8
     },
     "catch": {
-     "loop": false
+     "loop": false,
+     "fps": 10
     }
    }
   },
   "snake": {
-   "w": 512,
-   "h": 256,
+   "w": 448,
+   "h": 176,
    "body": 96,
+   "base": 24,
+   "pixel": true,
    "anims": {
     "idle": {
-     "loop": true
+     "loop": true,
+     "fps": 6
     },
     "move": {
-     "loop": true
+     "loop": true,
+     "fps": 10
     },
     "windup": {
-     "loop": false
+     "loop": false,
+     "fps": 8
     },
     "attack": {
-     "loop": false
-    },
-    "death": {
-     "loop": false
+     "loop": false,
+     "fps": 14
     }
    }
   },
   "goat": {
-   "w": 512,
-   "h": 384,
+   "w": 480,
+   "h": 256,
    "body": 176,
+   "base": 24,
+   "pixel": true,
    "anims": {
     "idle": {
-     "loop": true
+     "loop": true,
+     "fps": 8
     },
     "move": {
-     "loop": true
+     "loop": true,
+     "fps": 10
     },
     "windup": {
-     "loop": false
+     "loop": false,
+     "fps": 8
     },
     "attack": {
-     "loop": false
-    },
-    "death": {
-     "loop": false
+     "loop": false,
+     "fps": 14
     }
    }
   },
   "fowl": {
-   "w": 384,
-   "h": 256,
+   "w": 256,
+   "h": 208,
    "body": 128,
+   "base": 24,
+   "pixel": true,
    "anims": {
     "idle": {
-     "loop": true
+     "loop": true,
+     "fps": 8
     },
     "move": {
-     "loop": true
+     "loop": true,
+     "fps": 12
     },
     "windup": {
-     "loop": false
+     "loop": false,
+     "fps": 8
     },
     "attack": {
-     "loop": false
-    },
-    "death": {
-     "loop": false
+     "loop": false,
+     "fps": 12
     }
    }
   },
   "monkey": {
    "w": 384,
-   "h": 384,
+   "h": 288,
    "body": 168,
+   "base": 24,
+   "pixel": true,
    "anims": {
     "idle": {
-     "loop": true
+     "loop": true,
+     "fps": 8
     },
     "move": {
-     "loop": true
+     "loop": true,
+     "fps": 12
     },
     "windup": {
-     "loop": false
+     "loop": false,
+     "fps": 8
     },
     "attack": {
-     "loop": false
-    },
-    "death": {
-     "loop": false
+     "loop": false,
+     "fps": 12
     }
    }
   },
   "panther": {
    "w": 640,
-   "h": 384,
+   "h": 256,
    "body": 160,
+   "base": 24,
+   "pixel": true,
    "anims": {
     "idle": {
-     "loop": true
+     "loop": true,
+     "fps": 8
     },
     "move": {
-     "loop": true
+     "loop": true,
+     "fps": 10
     },
     "windup": {
-     "loop": false
+     "loop": false,
+     "fps": 8
     },
     "attack": {
-     "loop": false
-    },
-    "death": {
-     "loop": false
+     "loop": false,
+     "fps": 12
     }
    }
   },
   "white_mmoatia": {
    "w": 384,
-   "h": 384,
+   "h": 288,
    "body": 192,
+   "base": 24,
+   "pixel": true,
    "anims": {
     "idle": {
-     "loop": true
+     "loop": true,
+     "fps": 8
     },
     "move": {
-     "loop": true
+     "loop": true,
+     "fps": 10
     },
     "windup": {
-     "loop": false
+     "loop": false,
+     "fps": 8
     },
     "attack": {
-     "loop": false
-    },
-    "death": {
-     "loop": false
+     "loop": false,
+     "fps": 12
     }
    }
   },
   "gold_mask": {
-   "w": 384,
-   "h": 384,
+   "w": 288,
+   "h": 288,
    "body": 192,
+   "base": 24,
+   "pixel": true,
    "anims": {
     "idle": {
-     "loop": true
+     "loop": true,
+     "fps": 8
     },
     "move": {
-     "loop": true
+     "loop": true,
+     "fps": 8
     },
     "windup": {
-     "loop": false
+     "loop": false,
+     "fps": 8
     },
     "attack": {
-     "loop": false
-    },
-    "death": {
-     "loop": false
+     "loop": false,
+     "fps": 12
     }
    }
   },
   "gold_lion": {
-   "w": 640,
-   "h": 384,
+   "w": 704,
+   "h": 336,
    "body": 208,
+   "base": 24,
+   "pixel": true,
    "anims": {
     "idle": {
-     "loop": true
+     "loop": true,
+     "fps": 8
     },
     "move": {
-     "loop": true
+     "loop": true,
+     "fps": 10
     },
     "windup": {
-     "loop": false
+     "loop": false,
+     "fps": 8
     },
     "attack": {
-     "loop": false
-    },
-    "death": {
-     "loop": false
+     "loop": false,
+     "fps": 14
     }
    }
   },
   "gold_slime": {
-   "w": 384,
-   "h": 256,
+   "w": 288,
+   "h": 208,
    "body": 120,
+   "base": 24,
+   "pixel": true,
    "anims": {
     "idle": {
-     "loop": true
+     "loop": true,
+     "fps": 8
     },
     "move": {
-     "loop": true
+     "loop": true,
+     "fps": 10
     },
     "windup": {
-     "loop": false
+     "loop": false,
+     "fps": 8
     },
     "attack": {
-     "loop": false
-    },
-    "death": {
-     "loop": false
+     "loop": false,
+     "fps": 12
     }
    }
   },
   "red": {
-   "w": 512,
-   "h": 384,
+   "w": 448,
+   "h": 336,
    "body": 208,
+   "base": 24,
+   "pixel": true,
    "anims": {
     "idle": {
-     "loop": true
+     "loop": true,
+     "fps": 8
     },
     "run": {
-     "loop": true
+     "loop": true,
+     "fps": 12
     },
     "windup": {
-     "loop": false
+     "loop": false,
+     "fps": 8
     },
     "shoot": {
-     "loop": false
+     "loop": false,
+     "fps": 12
     },
     "stagger": {
-     "loop": false
+     "loop": false,
+     "fps": 10
     },
     "heal": {
-     "loop": true
-    },
-    "death": {
-     "loop": false
+     "loop": true,
+     "fps": 6
     }
    }
   },
   "blue": {
-   "w": 512,
-   "h": 384,
+   "w": 448,
+   "h": 336,
    "body": 208,
+   "base": 24,
+   "pixel": true,
    "anims": {
     "idle": {
-     "loop": true
+     "loop": true,
+     "fps": 8
     },
     "run": {
-     "loop": true
+     "loop": true,
+     "fps": 12
     },
     "attack": {
-     "loop": true
+     "loop": true,
+     "fps": 16
     },
     "stagger": {
-     "loop": false
+     "loop": false,
+     "fps": 10
     },
     "heal": {
-     "loop": true
-    },
-    "death": {
-     "loop": false
+     "loop": true,
+     "fps": 6
     }
    }
   },
   "samanteng": {
-   "w": 640,
-   "h": 640,
+   "w": 704,
+   "h": 496,
    "body": 320,
+   "base": 24,
+   "pixel": true,
    "anims": {
     "idle": {
-     "loop": true
+     "loop": true,
+     "fps": 8
     },
     "walk": {
-     "loop": true
+     "loop": true,
+     "fps": 8
     },
     "claw": {
-     "loop": false
+     "loop": false,
+     "fps": 14
     },
     "shoot": {
-     "loop": false
+     "loop": false,
+     "fps": 10
     },
     "frenzy": {
-     "loop": true
+     "loop": true,
+     "fps": 16
     },
     "rest": {
-     "loop": true
+     "loop": true,
+     "fps": 6
     },
     "seize": {
-     "loop": false
-    },
-    "death": {
-     "loop": false
+     "loop": false,
+     "fps": 10
     }
    }
   },
   "sasabonsam": {
-   "w": 768,
-   "h": 512,
+   "w": 832,
+   "h": 496,
    "body": 240,
+   "base": 120,
+   "pixel": true,
    "anims": {
     "fly": {
-     "loop": true
+     "loop": true,
+     "fps": 12
     },
     "perch": {
-     "loop": true
+     "loop": true,
+     "fps": 6
     },
     "windup": {
-     "loop": false
+     "loop": false,
+     "fps": 8
     },
     "dive": {
-     "loop": true
+     "loop": true,
+     "fps": 14
     },
     "shoot": {
-     "loop": false
-    },
-    "death": {
-     "loop": false
+     "loop": false,
+     "fps": 10
     }
    }
   },
   "barafo": {
    "w": 1408,
-   "h": 768,
+   "h": 640,
    "body": 432,
+   "base": 24,
+   "pixel": true,
    "anims": {
     "idle": {
-     "loop": true
+     "loop": true,
+     "fps": 8
     },
     "walk": {
-     "loop": true
+     "loop": true,
+     "fps": 8
     },
     "slash_windup": {
-     "loop": false
+     "loop": false,
+     "fps": 10
     },
     "slash": {
-     "loop": false
+     "loop": false,
+     "fps": 14
     },
     "sweep_windup": {
-     "loop": false
+     "loop": false,
+     "fps": 10
     },
     "sweep": {
-     "loop": false
+     "loop": false,
+     "fps": 14
     },
     "leap": {
-     "loop": false
+     "loop": false,
+     "fps": 10
     },
     "slam": {
-     "loop": false
+     "loop": false,
+     "fps": 12
     },
     "recover": {
-     "loop": false
+     "loop": false,
+     "fps": 8
     },
     "regenerate": {
-     "loop": false
+     "loop": true,
+     "fps": 10
+    }
+   }
+  },
+  "giant_white_mmoatia": {
+   "w": 768,
+   "h": 576,
+   "body": 384,
+   "base": 24,
+   "pixel": true,
+   "anims": {
+    "idle": {
+     "loop": true,
+     "fps": 8
     },
-    "death": {
-     "loop": false
+    "move": {
+     "loop": true,
+     "fps": 10
+    },
+    "windup": {
+     "loop": false,
+     "fps": 8
+    },
+    "attack": {
+     "loop": false,
+     "fps": 12
+    }
+   }
+  },
+  "giant_snake": {
+   "w": 896,
+   "h": 352,
+   "body": 192,
+   "base": 24,
+   "pixel": true,
+   "anims": {
+    "idle": {
+     "loop": true,
+     "fps": 6
+    },
+    "move": {
+     "loop": true,
+     "fps": 10
+    },
+    "windup": {
+     "loop": false,
+     "fps": 8
+    },
+    "attack": {
+     "loop": false,
+     "fps": 14
+    }
+   }
+  },
+  "giant_fowl": {
+   "w": 512,
+   "h": 416,
+   "body": 256,
+   "base": 24,
+   "pixel": true,
+   "anims": {
+    "idle": {
+     "loop": true,
+     "fps": 8
+    },
+    "move": {
+     "loop": true,
+     "fps": 12
+    },
+    "windup": {
+     "loop": false,
+     "fps": 8
+    },
+    "attack": {
+     "loop": false,
+     "fps": 12
+    }
+   }
+  },
+  "giant_monkey": {
+   "w": 768,
+   "h": 576,
+   "body": 336,
+   "base": 24,
+   "pixel": true,
+   "anims": {
+    "idle": {
+     "loop": true,
+     "fps": 8
+    },
+    "move": {
+     "loop": true,
+     "fps": 12
+    },
+    "windup": {
+     "loop": false,
+     "fps": 8
+    },
+    "attack": {
+     "loop": false,
+     "fps": 12
+    }
+   }
+  },
+  "giant_gold_mask": {
+   "w": 576,
+   "h": 576,
+   "body": 384,
+   "base": 24,
+   "pixel": true,
+   "anims": {
+    "idle": {
+     "loop": true,
+     "fps": 8
+    },
+    "move": {
+     "loop": true,
+     "fps": 8
+    },
+    "windup": {
+     "loop": false,
+     "fps": 8
+    },
+    "attack": {
+     "loop": false,
+     "fps": 12
+    }
+   }
+  },
+  "giant_gold_slime": {
+   "w": 576,
+   "h": 416,
+   "body": 240,
+   "base": 24,
+   "pixel": true,
+   "anims": {
+    "idle": {
+     "loop": true,
+     "fps": 8
+    },
+    "move": {
+     "loop": true,
+     "fps": 10
+    },
+    "windup": {
+     "loop": false,
+     "fps": 8
+    },
+    "attack": {
+     "loop": false,
+     "fps": 12
+    }
+   }
+  },
+  "giant_goat": {
+   "w": 960,
+   "h": 512,
+   "body": 352,
+   "base": 24,
+   "pixel": true,
+   "anims": {
+    "idle": {
+     "loop": true,
+     "fps": 8
+    },
+    "move": {
+     "loop": true,
+     "fps": 10
+    },
+    "windup": {
+     "loop": false,
+     "fps": 8
+    },
+    "attack": {
+     "loop": false,
+     "fps": 14
+    }
+   }
+  },
+  "giant_panther": {
+   "w": 1280,
+   "h": 512,
+   "body": 320,
+   "base": 24,
+   "pixel": true,
+   "anims": {
+    "idle": {
+     "loop": true,
+     "fps": 8
+    },
+    "move": {
+     "loop": true,
+     "fps": 10
+    },
+    "windup": {
+     "loop": false,
+     "fps": 8
+    },
+    "attack": {
+     "loop": false,
+     "fps": 12
+    }
+   }
+  },
+  "giant_gold_lion": {
+   "w": 1408,
+   "h": 672,
+   "body": 416,
+   "base": 24,
+   "pixel": true,
+   "anims": {
+    "idle": {
+     "loop": true,
+     "fps": 8
+    },
+    "move": {
+     "loop": true,
+     "fps": 10
+    },
+    "windup": {
+     "loop": false,
+     "fps": 8
+    },
+    "attack": {
+     "loop": false,
+     "fps": 14
     }
    }
   }

@@ -58,8 +58,11 @@ Pixel art made in Adwinifie (repo DanQuay-ai/adwinifie) is installed:
 - Kofitia: `assets/sprites/kofitia_afenakwa` (gold afena) and `assets/sprites/kofitia_palm` (palm-leaf sword).
   The palm version shows while Afenakwa is stolen, or always when the player picks **SWORD: PALM LEAF** in the title or pause menu.
 - Decor: tiles, level objects, pickups and parallax backgrounds (`assets/tiles`, `assets/objects`, `assets/sprites/banana|cocoa|gye_nyame`, `assets/backgrounds`).
-Everything else (enemies, bosses, story characters, projectiles, effects) is still drawn by code.
-Sources and generators live in Adwinifie (`exports/kofi`, `exports/kofi_palm`, `tools/decor_gen.py`).
+- Cast (v6): Odade, Awurade Basa, Barafo Boneng, Samanteng, Red, Blue, Sasabonsam, White Mmoatia, every mob and every mini-boss (`giant_*`) in `assets/sprites/<key>`.
+- Portraits (v6): 3/4 busts for every speaker in `assets/portraits/<key>.png` (512 x 512), shown in the dialogue box.
+- UI (v6): `assets/ui` (gold nine-slice panel, menu plaques, kente strip, Adinkra gauge icons: Akoma, Nkyinkyim, Dwennimmen).
+Projectiles and effects are still drawn by code.
+Sources and generators live in Adwinifie (`exports/kofi`, `exports/kofi_palm`, `exports/cast`, `exports/portraits`, `exports/ui`; `tools/kofi_gen.py`, `cast_gen.py`, `portrait_gen.py`, `ui_gen.py`, `decor_gen.py`).
 
 - Animated things: `assets/sprites/<character>/<action>/` with frames named `01.png, 02.png, ...`
   (`1.png, 2.png` or Procreate's `Layer 1.png, Layer 2.png` also work). Any number of frames, played at 12 per second
@@ -69,5 +72,9 @@ Sources and generators live in Adwinifie (`exports/kofi`, `exports/kofi_palm`, `
   on every frame of every action. Wide poses use the empty space around the body; never crop or resize a frame.
 - Anything missing keeps its code drawing, so art can arrive one character at a time.
 
-Not wired yet (coming later): enemy death animations, projectile start/impact, the `vfx/` effects, touch-button art,
-cutscene backdrops and Kofitia's cutscene actions (receive sword, pan jump, release sword).
+Not wired yet (coming later): enemy death animations, projectile start/impact, the `vfx/` effects and cutscene backdrops.
+
+## Touch controls
+The joystick floats: touch anywhere in the left half of the controls area (and a little above it) and the stick
+centres under the thumb. Push past the rim and the base follows the thumb, so there is no exact spot to hold.
+Directions have a little hysteresis so they do not flicker at the edge. On release the stick returns to its resting spot.

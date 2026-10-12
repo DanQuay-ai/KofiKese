@@ -644,13 +644,14 @@
     draw(ctx, cam) {
       let color = this.d.color, h = this.h, yOff = 0;
       if ((this.state === 'tell' || this.state === 'crouch') && Math.floor(this.t * 20) % 2) color = '#ff4a3a';
-      if (this.state === 'crouch') { h = this.h - 3; yOff = 3; }
+      if (this.state === 'crouch' && !KK.Sprites.has(this.type)) { h = this.h - 3; yOff = 3; }
       const e = { x: this.x, y: this.y + yOff, w: this.w, h, dir: this.dir, animT: this.animT };
       let anim = ENEMY_ANIM[this.state] || 'idle';
       if (anim === 'move' && Math.abs(this.vx) < 4 && this.onGround !== false && !this.flying) anim = 'idle';
       if (this.type === 'whiteMmoatia') anim = this.charging ? 'windup' : this.cd > this.d.fireEvery - 0.3 ? 'attack' : 'idle';
       if (this.type === 'goldMask') anim = 'move';
-      KK.drawActor(ctx, cam, e, color, { sprite: this.type, owner: this, anim, fallbacks: ['move', 'idle'], flash: this.flash > 0 ? 'rgba(255,255,255,0.85)' : null, outline: this.type === 'panther' ? '#6a6a80' : this.type === 'whiteMmoatia' || this.type === 'fowl' ? '#9a9a9a' : this.mini ? '#000' : null, eyeColor: this.type === 'panther' ? '#f2d23a' : this.type === 'whiteMmoatia' ? '#e0302a' : '#111' });
+      const giantKey = this.mini ? 'giant_' + KK.spriteKey(this.type) : null;   // mini-bosses have their own gold-ornamented art
+      KK.drawActor(ctx, cam, e, color, { sprite: giantKey && KK.Sprites.has(giantKey) ? giantKey : this.type, owner: this, anim, fallbacks: ['move', 'idle'], flash: this.flash > 0 ? 'rgba(255,255,255,0.85)' : null, outline: this.type === 'panther' ? '#6a6a80' : this.type === 'whiteMmoatia' || this.type === 'fowl' ? '#9a9a9a' : this.mini ? '#000' : null, eyeColor: this.type === 'panther' ? '#f2d23a' : this.type === 'whiteMmoatia' ? '#e0302a' : '#111' });
       if (this.stun > 0 && this.stunFx) { ctx.fillStyle = '#ffd23f'; for (let i = 0; i < 3; i++) { const an = this.t * 6 + i * 2.1; ctx.fillRect(this.x - cam.x + this.w / 2 + Math.cos(an) * 8 - 1, this.y - cam.y - 5 + Math.sin(an) * 2, 2.5, 2.5); } }
       if (this.stunner) { ctx.strokeStyle = `rgba(190,120,255,${0.5 + 0.3 * Math.sin(this.t * 6)})`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(this.x - cam.x + this.w / 2, this.y - cam.y - 6, 3.5, 0, Math.PI * 2); ctx.stroke(); }
       if (this.charging) { ctx.fillStyle = '#ff7a1a'; ctx.fillRect(this.x - cam.x + (this.dir > 0 ? this.w : -3), this.y - cam.y + 4, 3, 3); }

@@ -198,7 +198,7 @@
       this.runScript([
         { wait: 0.6 }, { dialog: 'opening' },
         { fn: () => {
-          this.swordGiven = true; this.player.noSword = false; this.player.hasAfenakwa = true; this.player.receiveT = 0.5; KK.Audio.sfx('gold');
+          this.swordGiven = true; this.player.noSword = false; this.player.hasAfenakwa = true; this.player.receiveT = 0.5; KK.Audio.sfx('gold'); this.odadeGive = this.time;
           for (let i = 0; i < 24; i++) this.particles.push(new KK.Particle(this.player.x + 6, this.player.y, KK.rand(-80, 80), KK.rand(-150, -20), '#ffd23f', 0.9));
           this.texts.push(new KK.FloatText(this.player.x + 6, this.player.y - 10, 'AFENAKWA', '#ffd23f', 11));
         } },
@@ -591,7 +591,7 @@
       const showPause = this.scene === 'play' && !this.paused;
       if (showPause !== this._pauseShown) { this._pauseShown = showPause; const pb = document.getElementById('pauseBtn'); if (pb) pb.hidden = !showPause; }
       ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#0c0705'; ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-      ctx.setTransform(this.S, 0, 0, this.S, this.ox, this.oy); ctx.imageSmoothingEnabled = true;
+      ctx.setTransform(this.S, 0, 0, this.S, this.ox, this.oy); ctx.imageSmoothingEnabled = false;
       this.menuRects = [];
       ctx.save(); ctx.beginPath(); ctx.rect(0, 0, VW, VH); ctx.clip();
       if (this.scene === 'title') this.drawTitle(ctx);
@@ -619,33 +619,96 @@
       if (line) this.text(ctx, line, x, yy, style);
       return yy + lineH;
     }
+    // ---- Akan UI kit (art: assets/ui, made with adwinifie/tools/ui_gen.py; 1 art px = 0.5 game px)
+    nine(ctx, key, x, y, w, h, c) {
+      const im = KK.Sprites.img('ui/' + key); if (!im) return false;
+      const C2 = c * 8, W = im.width, H = im.height;
+      const sx = [0, C2, W - C2], sw = [C2, W - 2 * C2, C2], dx = [x, x + c, x + w - c], dw = [c, w - 2 * c, c];
+      const sy = [0, C2, H - C2], sh = [C2, H - 2 * C2, C2], dy = [y, y + c, y + h - c], dh = [c, h - 2 * c, c];
+      for (let j = 0; j < 3; j++) for (let i = 0; i < 3; i++) if (dw[i] > 0 && dh[j] > 0 && sw[i] > 0 && sh[j] > 0) ctx.drawImage(im, sx[i], sy[j], sw[i], sh[j], dx[i], dy[j], dw[i], dh[j]);
+      return true;
+    }
+    wood(ctx, x, y, w, h, alpha = 1) {
+      const g = ctx.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, `rgba(46,26,13,${alpha})`); g.addColorStop(1, `rgba(20,11,6,${alpha})`);
+      ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
+      ctx.fillStyle = 'rgba(255,190,120,0.035)';
+      for (let yy = y + 3, i = 0; yy < y + h - 2; yy += 2.5 + (i * 7) % 4 * 0.5, i++) ctx.fillRect(x + 2 + (i * 13) % 9, yy, w - 4 - (i * 5) % 14, 0.5);
+    }
+    kente(ctx, x, y, w) {
+      const im = KK.Sprites.img('ui/kente'); x = Math.round(x * 2) / 2; y = Math.round(y * 2) / 2;
+      if (!im) { ctx.fillStyle = '#c9971a'; ctx.fillRect(x, y, w, 2); return; }
+      for (let i = 0; i < w; i += 8) { const k = Math.min(8, w - i); ctx.drawImage(im, 0, 0, k * 8, im.height, x + i, y, k, im.height / 8); }
+    }
+    icon(ctx, key, x, y, size = 8) { const im = KK.Sprites.img('ui/' + key); if (im) ctx.drawImage(im, Math.round(x * 2) / 2, Math.round(y * 2) / 2, size, size); return !!im; }
     panel(ctx, x, y, w, h, r = 6) {
+      x = Math.round(x * 2) / 2; y = Math.round(y * 2) / 2; w = Math.round(w * 2) / 2; h = Math.round(h * 2) / 2;
+      if (KK.Sprites.img('ui/panel')) { this.wood(ctx, x + 1, y + 1, w - 2, h - 2); this.nine(ctx, 'panel', x, y, w, h, 6); return; }
       ctx.fillStyle = 'rgba(20,12,7,0.9)'; ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fill();
       ctx.strokeStyle = 'rgba(201,151,26,0.85)'; ctx.lineWidth = 1; ctx.stroke();
     }
+    // gold-framed gauge: trough, fill with a light top edge, tenth ticks
+    gauge(ctx, x, y, w, h, v, max, col, flash) {
+      ctx.fillStyle = '#1a0d07'; ctx.fillRect(x, y, w, h);
+      const f = KK.clamp(v / max, 0, 1) * w;
+      if (f > 0) {
+        ctx.fillStyle = col; ctx.fillRect(x, y, f, h);
+        ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillRect(x, y, f, 0.5);
+        ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.fillRect(x, y + h - 1, f, 1);
+      }
+      ctx.fillStyle = 'rgba(0,0,0,0.45)'; for (let i = 1; i < 10; i++) ctx.fillRect(x + Math.round(w * i / 10 * 2) / 2, y, 0.5, h);
+      ctx.strokeStyle = flash > 0 && Math.floor(flash * 20) % 2 ? '#ffffff' : '#c9971a'; ctx.lineWidth = 0.5; ctx.strokeRect(x - 0.25, y - 0.25, w + 0.5, h + 0.5);
+      ctx.strokeStyle = 'rgba(26,15,13,0.9)'; ctx.strokeRect(x - 0.75, y - 0.75, w + 1.5, h + 1.5);
+    }
     drawMenu(ctx, items, y0, gap = 20) {
+      const art = !!KK.Sprites.img('ui/btn');
       items.forEach((o, i) => {
-        const sel = i === this.menuIndex, w = 150, x = VW / 2 - w / 2, y = y0 + i * gap;
-        ctx.fillStyle = sel ? 'rgba(255,210,63,0.18)' : 'rgba(255,255,255,0.05)'; ctx.beginPath(); ctx.roundRect(x, y, w, gap - 4, 5); ctx.fill();
-        if (sel) { ctx.strokeStyle = COL.gold; ctx.lineWidth = 1; ctx.stroke(); }
-        this.text(ctx, o.label, VW / 2, y + (gap - 4) / 2 + (o.hint ? -3 : 0), { size: 10, align: 'center', base: 'middle', color: sel ? '#fff' : '#d8c4a0', weight: 800 });
-        if (o.hint) this.text(ctx, o.hint, VW / 2, y + (gap - 4) / 2 + 6, { size: 6.5, align: 'center', base: 'middle', color: COL.muted, weight: 600, stroke: null });
-        this.menuRects.push({ x, y, w, h: gap - 4, go: () => { this.menuIndex = i; o.go(); } });
+        const sel = i === this.menuIndex, w = 140, x = VW / 2 - w / 2, y = y0 + i * gap, h = gap - 4;
+        if (art) {
+          this.wood(ctx, x + 1, y + 1, w - 2, h - 2, sel ? 0.97 : 0.85);
+          if (sel) { ctx.fillStyle = 'rgba(255,198,26,0.12)'; ctx.fillRect(x + 1, y + 1, w - 2, h - 2); }
+          this.nine(ctx, sel ? 'btn_sel' : 'btn', x, y, w, h, 3);
+          if (sel) { const b = Math.sin(this.time * 6) * 1; this.icon(ctx, 'diamond', x - 6 + b, y + h / 2 - 2, 4); this.icon(ctx, 'diamond', x + w + 2 - b, y + h / 2 - 2, 4); }
+        } else {
+          ctx.fillStyle = sel ? 'rgba(255,210,63,0.18)' : 'rgba(255,255,255,0.05)'; ctx.beginPath(); ctx.roundRect(x, y, w, h, 5); ctx.fill();
+          if (sel) { ctx.strokeStyle = COL.gold; ctx.lineWidth = 1; ctx.stroke(); }
+        }
+        this.text(ctx, o.label, VW / 2, y + h / 2 + (o.hint ? -3 : 0.5), { size: 10, align: 'center', base: 'middle', color: sel ? '#ffe08a' : '#d8c4a0', weight: 800, stroke: sel ? 'rgba(60,30,0,0.7)' : null });
+        if (o.hint) this.text(ctx, o.hint, VW / 2, y + h / 2 + 6, { size: 6.5, align: 'center', base: 'middle', color: COL.muted, weight: 600, stroke: null });
+        this.menuRects.push({ x, y, w, h, go: () => { this.menuIndex = i; o.go(); } });
       });
     }
 
     drawTitle(ctx) {
-      const g = ctx.createLinearGradient(0, 0, 0, VH); g.addColorStop(0, '#1b0f08'); g.addColorStop(1, '#5a2a10');
-      ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH);
-      for (let i = 0; i < 40; i++) { const a = 0.3 + 0.4 * Math.sin(this.time * 2 + i); ctx.fillStyle = `rgba(255,198,26,${a})`; ctx.fillRect((i * 47) % VW, (i * 29 + this.time * 8) % VH, 1.2, 1.2); }
-      const top = Math.max(16, VH * 0.12);
-      ctx.fillStyle = '#ffc61a'; ctx.fillRect(VW / 2 - 11, top, 22, 22); ctx.fillStyle = '#5a2a10'; ctx.fillRect(VW / 2 - 2.5, top + 4, 5, 14); ctx.fillRect(VW / 2 - 7, top + 8.5, 14, 5);
-      this.text(ctx, 'KOFI KESE', VW / 2, top + 30, { size: 30, align: 'center', color: COL.gold, weight: 800, stroke: '#7a3a00' });
-      this.text(ctx, 'Kofi Kese', VW / 2, top + 66, { size: 22, font: FONT_KR, align: 'center', color: COL.cream, stroke: null });
-      this.text(ctx, 'A NEOAKAN GAME', VW / 2, top + 96, { size: 8, align: 'center', color: '#e8c35a', weight: 700, stroke: null });
-      if (this.menu === 'diff') this.text(ctx, 'CHOOSE DIFFICULTY', VW / 2, top + 114, { size: 8, align: 'center', color: COL.muted, stroke: null });
-      this.drawMenu(ctx, this.menuItems(), top + 128, this.menu === 'diff' ? 26 : 22);
-      this.text(ctx, 'BETA', 8, VH - 14, { size: 7, color: '#806040', stroke: null });
+      const t = this.time;
+      // the forge at night: parallax art if loaded, warm gradient otherwise
+      const far = KK.Sprites.img('bg/forge/bg_far'), mid = KK.Sprites.img('bg/forge/bg_mid');
+      if (far) {
+        for (const [im, sp] of [[far, 2], [mid, 5]]) { if (!im) continue; const h = VH, w = im.width / im.height * h; const ox = -((t * sp) % w); for (let x = ox; x < VW; x += w) ctx.drawImage(im, x, 0, w, h); }
+        const v = ctx.createLinearGradient(0, 0, 0, VH); v.addColorStop(0, 'rgba(12,6,3,0.82)'); v.addColorStop(0.55, 'rgba(30,12,4,0.55)'); v.addColorStop(1, 'rgba(12,6,3,0.92)');
+        ctx.fillStyle = v; ctx.fillRect(0, 0, VW, VH);
+      } else { const g = ctx.createLinearGradient(0, 0, 0, VH); g.addColorStop(0, '#1b0f08'); g.addColorStop(1, '#5a2a10'); ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH); }
+      for (let i = 0; i < 36; i++) { const a = 0.25 + 0.4 * Math.sin(t * 2 + i); ctx.fillStyle = `rgba(255,${150 + (i * 13) % 80},40,${a})`; ctx.fillRect((i * 47 + Math.sin(t + i) * 4) % VW, VH - ((i * 29 + t * 9) % VH), 1, 1); }
+      const top = Math.max(12, VH * 0.07);
+      // logo plaque
+      this.panel(ctx, 14, top, VW - 28, 66);
+      this.kente(ctx, 18, top + 4, VW - 36);
+      this.text(ctx, 'KOFI KESE', VW / 2, top + 11, { size: 26, align: 'center', color: COL.gold, weight: 800, stroke: '#5a2a00' });
+      this.text(ctx, 'Kofi Kese', VW / 2, top + 38, { size: 17, font: FONT_KR, align: 'center', color: COL.cream, stroke: null });
+      this.kente(ctx, 18, top + 58, VW - 36);
+      // Kofitia with his sword, big, on a glowing step
+      const ky = top + 140, sc = 2.6, key = KK.weapon === 'palm' ? 'kofitia_palm' : 'kofitia_afenakwa';
+      const glow = ctx.createRadialGradient(VW / 2, ky, 2, VW / 2, ky, 46); glow.addColorStop(0, 'rgba(255,170,60,0.35)'); glow.addColorStop(1, 'rgba(255,170,60,0)');
+      ctx.fillStyle = glow; ctx.fillRect(VW / 2 - 50, ky - 60, 100, 70);
+      ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(VW / 2, ky, 16, 3, 0, 0, Math.PI * 2); ctx.fill();
+      if (KK.Sprites.has(key)) {
+        ctx.save(); ctx.translate(VW / 2, ky); ctx.scale(sc, sc);
+        KK.Sprites.draw(ctx, key, 'idle', t, -C.PLAYER_W / 2, -C.PLAYER_H, C.PLAYER_W, C.PLAYER_H, false, { fallbacks: ['idle'] });
+        ctx.restore();
+      }
+      this.text(ctx, 'A NEOAKAN GAME', VW / 2, ky + 6, { size: 7, align: 'center', color: '#e8c35a', weight: 800, stroke: null });
+      const my = ky + 20;
+      if (this.menu === 'diff') this.text(ctx, 'CHOOSE DIFFICULTY', VW / 2, my - 2, { size: 7, align: 'center', color: COL.muted, stroke: null });
+      this.drawMenu(ctx, this.menuItems(), my + (this.menu === 'diff' ? 8 : 0), this.menu === 'diff' ? 26 : 21);
     }
 
     drawPlay(ctx) {
@@ -662,6 +725,9 @@
       for (const pl of this.platforms) pl.draw(ctx, cam);
       for (const k of this.pickups) k.draw(ctx, cam);
       for (const g of this.ghosts) { ctx.globalAlpha = g.life / 0.25 * 0.5; ctx.fillStyle = g.color; ctx.fillRect(g.x - cam.x, g.y - cam.y, g.w, g.h); ctx.globalAlpha = 1; }
+      // contact shadows: everyone stands on the ground (fades with height when jumping or flying)
+      for (const e of this.enemies) if (!e.dead && e.x + e.w > cam.x - 40 && e.x < cam.x + vw + 40) this.drawShadow(ctx, cam, e);
+      if (!this.player.dead && !this.player.climbing) this.drawShadow(ctx, cam, this.player);
       for (const e of this.enemies) if (!e.dead && e.x + e.w > cam.x - 40 && e.x < cam.x + vw + 40) e.draw(ctx, cam);
       this.player.draw(ctx, cam);
       for (const pr of this.projectiles) pr.draw(ctx, cam);
@@ -686,6 +752,19 @@
       if (this.player.dead) this.text(ctx, 'KOFITIA FELL', VW / 2, VH / 2 - 8, { size: 16, align: 'center', color: '#ff6a5a', weight: 800 });
     }
 
+    drawShadow(ctx, cam, e) {
+      const L = this.level, feet = e.y + e.h, cx = e.x + e.w / 2;
+      let gy = null;
+      for (let ty = Math.floor((feet - 2) / T); ty < Math.floor(feet / T) + 8; ty++) {
+        const tx = Math.floor(cx / T);
+        if (L.isSolid(tx, ty) || L.isOneWay(tx, ty)) { gy = ty * T; break; }
+      }
+      if (gy == null || gy < feet - 3) return;
+      const k = KK.clamp(1 - (gy - feet) / 70, 0, 1); if (k <= 0) return;
+      const w = Math.max(6, e.w * 0.62) * (0.55 + 0.45 * k);
+      ctx.fillStyle = `rgba(10,6,4,${0.32 * k})`;
+      ctx.beginPath(); ctx.ellipse(cx - cam.x, gy - cam.y - 0.3, w, Math.max(1.2, w * 0.18), 0, 0, Math.PI * 2); ctx.fill();
+    }
     drawDecor(ctx, cam) {
       const L = this.level, t = this.time;
       for (const d of L.spawns.decor) {
@@ -701,7 +780,7 @@
           if (!this.swordGiven) { ctx.fillStyle = '#ffd23f'; ctx.fillRect(x + 1, y + 4, 14, 2); ctx.fillStyle = '#7a4d14'; ctx.fillRect(x + 12, y + 3, 2, 4); }
         } else if (d.c === 'D') {
           const e = { x: d.x + 1, y: d.y - 10, w: 14, h: 26, dir: this.player && this.player.x > d.x ? 1 : -1 };
-          KK.drawActor(ctx, cam, e, '#1a1a1a', { sprite: 'odade', owner: d, anim: this.dialog ? 'talk' : this.swordGiven ? 'hammer' : 'idle', fallbacks: ['idle'], eyeColor: '#f5e6c8', outline: '#5a4a3a' });
+          KK.drawActor(ctx, cam, e, '#1a1a1a', { sprite: 'odade', owner: d, anim: this.odadeGive != null && this.time - this.odadeGive < 0.6 ? 'give' : this.dialog ? 'talk' : this.swordGiven ? 'hammer' : 'idle', fallbacks: ['idle'], eyeColor: '#f5e6c8', outline: '#5a4a3a' });
           if (KK.Sprites.has('odade')) continue;
           const hy = Math.sin(t * 6) > 0.6 && !this.dialog ? -4 : 0;
           ctx.fillStyle = '#8a8a96'; ctx.fillRect(x + (e.dir > 0 ? 15 : -4), y - 2 + hy, 6, 5); ctx.fillStyle = '#6b4a2b'; ctx.fillRect(x + (e.dir > 0 ? 16 : -3), y + 3 + hy, 2, 7);
@@ -745,40 +824,40 @@
 
     drawHUD(ctx) {
       const p = this.player;
-      ctx.fillStyle = 'rgba(12,7,4,0.55)'; ctx.beginPath(); ctx.roundRect(4, 4, 94, 40, 5); ctx.fill();
-      const bar = (label, y, v, max, col, flash) => {
-        this.text(ctx, label, 8, y - 1.2, { size: 5.5, color: col, weight: 800, stroke: null });
-        ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.beginPath(); ctx.roundRect(36, y, 60, 6, 3); ctx.fill();
-        if (v > 0) { ctx.fillStyle = col; ctx.beginPath(); ctx.roundRect(36, y, Math.max(3, 60 * v / max), 6, 3); ctx.fill(); }
-        if (flash > 0 && Math.floor(flash * 20) % 2) { ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1; ctx.beginPath(); ctx.roundRect(35.5, y - 0.5, 61, 7, 3); ctx.stroke(); }
-      };
-      bar('LIFE', 9, p.health, p.maxHealth, COL.life, 0);
-      bar('STAMINA', 21, p.stamina, p.maxStamina, COL.stamina, p.staminaFlash);
-      bar('POWER', 33, p.power, p.maxPower, COL.power, p.powerFlash);
-      this.text(ctx, String(Math.ceil(p.health)), 94, 9.3, { size: 5.5, color: '#fff', align: 'right', weight: 800, stroke: 'rgba(0,0,0,0.6)' });
-      ctx.fillStyle = 'rgba(12,7,4,0.55)'; ctx.beginPath(); ctx.roundRect(VW - 56, 4, 52, 28, 5); ctx.fill();
-      ctx.fillStyle = '#ffc61a'; ctx.fillRect(VW - 52, 9, 7, 7); ctx.fillStyle = '#8a5a00'; ctx.fillRect(VW - 49.5, 10.3, 2, 4.5); ctx.fillRect(VW - 51, 11.8, 5, 2);
-      this.text(ctx, String(this.gyeCount).padStart(2, '0') + '/' + this.gyeTotal, VW - 42, 7.5, { size: 7, color: COL.gold, weight: 800, stroke: null });
-      this.text(ctx, KK.fmtTime(this.stats.time), VW - 52, 19.5, { size: 6.5, color: '#fff', weight: 700, stroke: null });
+      this.panel(ctx, 3, 3, 98, 41);
+      const rows = [['icon_life', 'LIFE', p.health, p.maxHealth, COL.life, 0], ['icon_stamina', 'STAMINA', p.stamina, p.maxStamina, COL.stamina, p.staminaFlash], ['icon_power', 'POWER', p.power, p.maxPower, COL.power, p.powerFlash]];
+      rows.forEach(([ic, label, v, max, col, flash], i) => {
+        const y = 7 + i * 11.5;
+        if (!this.icon(ctx, ic, 7, y, 9)) { ctx.fillStyle = col; ctx.fillRect(8, y + 2, 6, 6); }
+        this.text(ctx, label, 19, y - 1, { size: 4.8, color: col, weight: 800, stroke: 'rgba(0,0,0,0.7)' });
+        this.gauge(ctx, 19, y + 5, 77, 4, v, max, col, flash);
+      });
+      this.text(ctx, String(Math.ceil(p.health)), 96, 5.8, { size: 5, color: '#fff', align: 'right', weight: 800, stroke: 'rgba(0,0,0,0.7)' });
+      this.panel(ctx, VW - 54, 3, 51, 27);
+      if (!(KK.Sprites.has('gye') && KK.Sprites.draw(ctx, 'gye', 'idle', this.time, VW - 52, 6, 8, 8, false))) { ctx.fillStyle = '#ffc61a'; ctx.fillRect(VW - 50, 8, 7, 7); }
+      this.text(ctx, String(this.gyeCount).padStart(2, '0') + '/' + this.gyeTotal, VW - 40, 7, { size: 7, color: COL.gold, weight: 800, stroke: 'rgba(0,0,0,0.6)' });
+      this.text(ctx, KK.fmtTime(this.stats.time), VW - 49, 18, { size: 6.5, color: COL.cream, weight: 700, stroke: null });
       if (this.lockOn) this.text(ctx, this.aimTarget ? 'LOCKED ON' : 'LOCK: NO TARGET', VW / 2, 36, { size: 6.5, align: 'center', color: '#7ac8ff', weight: 800 });
       if (p.comboShow > 0 && p.combo > 1) this.text(ctx, `${p.combo} HIT COMBO`, VW / 2, 96, { size: 11, align: 'center', color: COL.gold, weight: 800 });
       const bb = this.bossBar && !this.bossBar.target.dead ? this.bossBar : this.miniFocus ? { label: null, target: this.miniFocus, name: this.miniFocus.name } : null;
       if (bb && !this.dialog) {
         const b = bb.target, w = VW - 28, x = 14, y = 76;
         const name = bb.label ? KK.CHARACTERS[bb.label].name : bb.name;
-        ctx.fillStyle = 'rgba(12,7,4,0.72)'; ctx.beginPath(); ctx.roundRect(x - 6, y - 24, w + 12, 34, 5); ctx.fill();
-        this.text(ctx, name, x, y - 23, { size: 12, font: FONT_KR, color: COL.cream, stroke: null });
+        this.panel(ctx, x - 6, y - 26, w + 12, 38);
+        this.text(ctx, name, x, y - 23, { size: 12, font: FONT_KR, color: COL.gold, stroke: null });
         this.text(ctx, name.toUpperCase(), x + w, y - 19, { size: 6, color: COL.muted, align: 'right', weight: 700, stroke: null });
-        ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fillRect(x, y, w, 6);
+        this.kente(ctx, x, y - 7, w);
+        ctx.fillStyle = '#1a0d07'; ctx.fillRect(x, y, w, 6);
+        ctx.strokeStyle = '#c9971a'; ctx.lineWidth = 0.5; ctx.strokeRect(x - 0.25, y - 0.25, w + 0.5, 6.5);
         if (bb.hits) {
           const n = b.hitsNeeded, segW = w / n;
           for (let i = 0; i < n; i++) { ctx.fillStyle = i < n - b.hits ? '#d8342a' : '#3a2a2a'; ctx.fillRect(x + i * segW + 1, y, segW - 2, 6); }
-          this.text(ctx, `HEAVY HITS ${b.hits}/${n}`, x + w / 2, y - 8, { size: 6, color: COL.gold, align: 'center', weight: 800, stroke: null });
+          this.text(ctx, `HEAVY HITS ${b.hits}/${n}`, x + w / 2, y - 16, { size: 6, color: COL.gold, align: 'center', weight: 800, stroke: null });
         } else {
           ctx.fillStyle = bb.locked ? '#8a8a9a' : '#d8342a'; ctx.fillRect(x, y, w * Math.max(0, b.hp) / b.maxHp, 6);
           if (bb.locked) {
             const lull = b.turn && b.turn.phase === 'lull' && this.minions && this.minions.some(m => !m.dead);
-            this.text(ctx, lull ? `CATCH YOUR BREATH  ${Math.ceil(b.lullLeft || 0)}` : 'DEFEAT HER CHILDREN', x + w / 2, y - 8, { size: 6, color: lull ? '#9ff0a0' : '#d0d0e0', align: 'center', weight: 800, stroke: null });
+            this.text(ctx, lull ? `CATCH YOUR BREATH  ${Math.ceil(b.lullLeft || 0)}` : 'DEFEAT HER CHILDREN', x + w / 2, y - 16, { size: 6, color: lull ? '#9ff0a0' : '#d0d0e0', align: 'center', weight: 800, stroke: null });
             if (this.minions) this.minions.forEach((m, i) => { const bx = x + i * (w / 2 + 2), bw = w / 2 - 2; this.text(ctx, i ? 'BLUE' : 'RED', bx, y + 9, { size: 5.5, color: i ? '#8fb0ff' : '#ff8a80', weight: 800, stroke: null }); ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fillRect(bx + 20, y + 10, bw - 20, 4); if (!m.dead) { ctx.fillStyle = i ? '#4a7aff' : '#e03030'; ctx.fillRect(bx + 20, y + 10, (bw - 20) * m.hp / m.maxHp, 4); } });
           }
         }
@@ -799,37 +878,50 @@
     }
     drawDialog(ctx) {
       const d = this.dialog, line = d.lines[d.i], ch = KK.CHARACTERS[line.s] || KK.CHARACTERS.narrator;
-      const h = 94, x = 6, y = VH - h - 6, w = VW - 12;
-      this.panel(ctx, x, y, w, h, 8);
+      const h = 96, x = 5, y = VH - h - 5, w = VW - 10;
+      this.panel(ctx, x, y, w, h);
       let tx = x + 10, ty = y + 10;
       if (ch.name) {
-        ctx.fillStyle = '#000'; ctx.fillRect(x + 8, y + 8, 38, 46);
-        const pimg = KK.Sprites.img('portrait/' + (line.s === 'brafo' ? 'barafo' : line.s));
-        if (pimg) ctx.drawImage(pimg, x + 8, y + 8 + (46 - 38) / 2, 38, 38);
+        const key = line.s === 'brafo' ? 'barafo' : line.s, pimg = KK.Sprites.img('portrait/' + key);
+        const px = x + 6, py = y + 6, ps = 44;
+        const bg = ctx.createRadialGradient(px + ps * 0.6, py + ps * 0.4, 2, px + ps / 2, py + ps / 2, ps * 0.75);
+        bg.addColorStop(0, ch.color || '#6a3a1a'); bg.addColorStop(1, '#120905');
+        ctx.fillStyle = bg; ctx.fillRect(px, py, ps, ps);
+        if (pimg) { ctx.save(); ctx.imageSmoothingEnabled = false; ctx.drawImage(pimg, px + 1, py + 1, ps - 2, ps - 2); ctx.restore(); }
         else {
-          ctx.fillStyle = ch.color; ctx.fillRect(x + 15, y + 16, 24, 32);
-          ctx.fillStyle = line.s === 'odade' ? '#f5e6c8' : '#111'; ctx.fillRect(x + 31, y + 24, 3, 3);
-          if (line.s === 'samanteng') { ctx.fillStyle = '#2a2420'; ctx.fillRect(x + 13, y + 16, 4, 32); }
+          ctx.fillStyle = ch.color; ctx.fillRect(px + 10, py + 10, 24, 32);
+          ctx.fillStyle = line.s === 'odade' ? '#f5e6c8' : '#111'; ctx.fillRect(px + 26, py + 18, 3, 3);
         }
-        ctx.strokeStyle = '#c9971a'; ctx.lineWidth = 1; ctx.strokeRect(x + 8.5, y + 8.5, 37, 45);
-        this.text(ctx, ch.name, x + 52, y + 7, { size: 13, font: FONT_KR, color: COL.gold, stroke: null });
-        this.text(ctx, ch.name, x + 52, y + 25, { size: 6, color: COL.muted, weight: 700, stroke: null });
-        tx = x + 52; ty = y + 35;
+        if (!this.nine(ctx, 'panel', px - 2, py - 2, ps + 4, ps + 4, 6)) { ctx.strokeStyle = '#c9971a'; ctx.lineWidth = 1; ctx.strokeRect(px + 0.5, py + 0.5, ps - 1, ps - 1); }
+        // name plate: Kradin name on a kente band
+        const nx = px + ps + 7;
+        ctx.font = `700 5.5px ${FONT}`; const lw = ctx.measureText(ch.name.toUpperCase()).width;
+        ctx.font = `13px ${FONT_KR}`; const kw = ctx.measureText(ch.name).width, room = x + w - 9 - lw - 4 - nx;
+        const ks = kw > room ? Math.max(8, 13 * room / kw) : 13;
+        this.text(ctx, ch.name, nx, y + 6 + (13 - ks) * 0.7, { size: ks, font: FONT_KR, color: COL.gold, stroke: 'rgba(0,0,0,0.6)' });
+        this.kente(ctx, nx, y + 22, x + w - nx - 8);
+        this.text(ctx, ch.name.toUpperCase(), x + w - 9, y + 7.5, { size: 5.5, color: COL.muted, align: 'right', weight: 700, stroke: null });
+        tx = nx; ty = y + 30;
       }
       this.wrapText(ctx, line.t.slice(0, Math.floor(d.chars)), tx, ty, x + w - tx - 10, 11.5, { size: 9.5, color: COL.cream, stroke: null, weight: 600 });
-      if (d.chars >= line.t.length && Math.floor(this.time * 3) % 2) { ctx.fillStyle = COL.gold; ctx.beginPath(); ctx.moveTo(x + w - 16, y + h - 12); ctx.lineTo(x + w - 8, y + h - 12); ctx.lineTo(x + w - 12, y + h - 7); ctx.fill(); }
+      if (d.chars >= line.t.length && Math.floor(this.time * 3) % 2) this.icon(ctx, 'diamond', x + w - 14, y + h - 13, 5);
     }
     drawCard(ctx) {
       const c = this.card, a = Math.min(1, c.t / 0.3, (c.dur - c.t) / 0.4);
       ctx.globalAlpha = KK.clamp(a, 0, 1); ctx.fillStyle = '#0a0604'; ctx.fillRect(0, 0, VW, VH);
+      this.kente(ctx, 20, VH / 2 - 34, VW - 40);
       this.text(ctx, c.title, VW / 2, VH / 2 - 22, { size: 20, align: 'center', color: COL.gold, weight: 800 });
       this.text(ctx, c.sub.toUpperCase(), VW / 2, VH / 2 + 6, { size: 10, align: 'center', color: COL.cream, weight: 700 });
+      this.kente(ctx, 20, VH / 2 + 22, VW - 40);
       ctx.globalAlpha = 1;
     }
     drawPause(ctx) {
-      ctx.fillStyle = 'rgba(0,0,0,0.65)'; ctx.fillRect(0, 0, VW, VH);
-      this.text(ctx, 'PAUSED', VW / 2, VH * 0.25, { size: 16, align: 'center', color: COL.gold, weight: 800 });
-      this.drawMenu(ctx, this.menuItems(), VH * 0.25 + 30, 24);
+      ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(0, 0, VW, VH);
+      const items = this.menuItems(), top = VH * 0.22, h = 40 + items.length * 24;
+      this.panel(ctx, 4, top - 8, VW - 8, h);
+      this.text(ctx, 'PAUSED', VW / 2, top, { size: 16, align: 'center', color: COL.gold, weight: 800 });
+      this.kente(ctx, 14, top + 19, VW - 28);
+      this.drawMenu(ctx, items, top + 28, 24);
     }
     drawEnding(ctx) {
       const E = this.end; if (!E) return;
@@ -839,7 +931,11 @@
       for (let i = 0; i < 6; i++) { const cx = (i * 70 + this.time * 10) % (VW + 60) - 30; ctx.beginPath(); ctx.ellipse(cx, 20 + i * 12, 30, 8, 0, 0, Math.PI * 2); ctx.fill(); }
       const gy = VH * 0.58;
       ctx.fillStyle = '#5a8a3a'; ctx.fillRect(0, gy, VW, VH - gy); ctx.fillStyle = '#3a6a2a'; for (let i = 0; i < 12; i++) ctx.fillRect(i * 28, gy - 12 - (i % 3) * 6, 16, 16);
-      if (E.basa) { ctx.fillStyle = '#c9971a'; ctx.fillRect(VW / 2 - 9, gy - 32, 18, 32); ctx.fillStyle = '#7a4d14'; ctx.fillRect(VW / 2 - 9, gy - 22, 18, 4); ctx.fillStyle = '#111'; ctx.fillRect(VW / 2 + 3, gy - 27, 2.5, 2.5); }
+      if (E.basa && KK.Sprites.has('basa')) {
+        const near = E.swordOn && (E.caught || E.swordY > gy - 90);
+        if (near && E.catchAt == null) E.catchAt = this.time;
+        KK.Sprites.draw(ctx, 'basa', near ? 'catch' : 'idle', near ? this.time - E.catchAt : this.time, VW / 2 - 7, gy - 30, 14, 30, true, { fallbacks: ['idle'] });
+      } else if (E.basa) { ctx.fillStyle = '#c9971a'; ctx.fillRect(VW / 2 - 9, gy - 32, 18, 32); ctx.fillStyle = '#7a4d14'; ctx.fillRect(VW / 2 - 9, gy - 22, 18, 4); ctx.fillStyle = '#111'; ctx.fillRect(VW / 2 + 3, gy - 27, 2.5, 2.5); }
       // Kofitia kneels at the hole in the clouds and lets Afenakwa fall
       if (KK.Sprites.has('kofitia_afenakwa')) {
         ctx.fillStyle = 'rgba(255,255,255,0.95)'; ctx.beginPath(); ctx.ellipse(VW / 2 - 6, 34, 46, 9, 0, 0, Math.PI * 2); ctx.fill();
@@ -864,7 +960,7 @@
       this.text(ctx, C.DIFFICULTY[f.diff].label + ' MODE', VW / 2, y + 28, { size: 7, align: 'center', color: COL.muted, weight: 700, stroke: null });
       const rows = [['TIME', KK.fmtTime(f.time)], ['GYE NYAME', `${String(f.gye).padStart(2, '0')} / ${f.gyeTotal}`], ['LIFE POINTS LOST', String(f.lifeLost)]];
       rows.forEach(([k, v], i) => { this.text(ctx, k, x + 12, y + 46 + i * 17, { size: 8.5, color: COL.cream, stroke: null }); this.text(ctx, v, x + w - 12, y + 46 + i * 17, { size: 8.5, color: '#fff', align: 'right', weight: 800, stroke: null }); });
-      ctx.fillStyle = '#c9971a'; ctx.fillRect(x + 12, y + 100, w - 24, 1);
+      this.kente(ctx, x + 12, y + 98, w - 24);
       this.text(ctx, 'SCORE', x + 12, y + 112, { size: 9, color: COL.gold, weight: 800, stroke: null });
       this.text(ctx, String(f.score).padStart(6, '0'), x + w - 12, y + 106, { size: 20, color: COL.gold, align: 'right', weight: 800, stroke: null });
       this.text(ctx, 'W1 ' + this.stats.gye[1] + '/' + this.gyeTotals[1] + '    W2 ' + this.stats.gye[2] + '/' + this.gyeTotals[2] + '    W3 ' + this.stats.gye[3] + '/' + this.gyeTotals[3], VW / 2, y + 136, { size: 6.5, color: COL.muted, align: 'center', stroke: null });
