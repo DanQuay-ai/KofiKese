@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Kofi Kese</title>
+<meta name="description" content="Kofi Kese, a NeoAkan platformer.">
+<meta name="theme-color" content="#120a06">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=5">
+</head>
+<body>
+  <button id="betaBtn" hidden>BETA</button>
+  <div id="betaPanel" hidden>
+    <div class="beta-title">Jump to</div>
+    <div class="levels"></div>
+    <div class="beta-title">Testing</div>
+    <label><input type="checkbox" name="invincible"> Invincible</label>
+    <label><input type="checkbox" name="fullResources"> Infinite stamina + power</label>
+    <label><input type="checkbox" name="hitboxes"> Show hitboxes</label>
+    <label><input type="checkbox" name="tv"> TV mode (landscape, controller)</label>
+    <label><input type="checkbox" name="mute"> Mute (M)</label>
+  </div>
+
+  <main id="app">
+    <div id="screen">
+      <canvas id="game" width="216" height="300"></canvas>
+      <button id="pauseBtn" data-action="PAUSE" aria-label="Pause"><span></span><span></span></button>
+      <div id="padHint" hidden>Controller connected</div>
+      <div id="share" hidden>
+        <button data-share="native">SHARE</button>
+        <a data-share="x" target="_blank" rel="noopener">X</a>
+        <a data-share="fb" target="_blank" rel="noopener">FACEBOOK</a>
+        <button data-share="copy">COPY · IG / SNAP</button>
+        <button data-share="save">SAVE CARD</button>
+        <button data-share="again" class="main">PLAY AGAIN</button>
+        <button data-share="menu" class="main">MENU</button>
+      </div>
+      <div id="toast" hidden></div>
+      <div id="loading">Loading</div>
+      <button id="skipBtn" hidden>SKIP ▸▸</button>
+      <section id="controls" aria-label="Touch controls">
+        <div id="joy" aria-label="Joystick: push up to jump"><div class="knob"></div></div>
+        <button class="btn lock" data-action="AIM"><b>LOCK</b></button>
+        <button class="btn h2" data-action="HEAVY_ATTACK_POWER"><b>H2</b></button>
+        <button class="btn h1" data-action="HEAVY_ATTACK_STAMINA"><b>H1</b></button>
+        <button class="btn dodge" data-action="DODGE"><b>DODGE</b></button>
+        <button class="btn atk" data-action="NORMAL_ATTACK"><b>ATK</b></button>
+      </section>
+      <div id="controlsPanel" hidden>
+        <div class="cp-head"><b>CONTROLS</b><button id="cpClose">CLOSE</button></div>
+        <p class="cp-note">Tap a key or button cell, then press the new key or controller button. Saved on this device.</p>
+        <div class="cp-scroll"><table id="cpTable"></table>
+        <div class="cp-touch"><b>Touch screen</b>: joystick moves; push it up to jump, down to crouch or climb down. Buttons: ATK, H1, H2, DODGE, LOCK (hold to aim Heavy 2).</div></div>
+        <div class="cp-foot"><button id="cpReset">RESET TO DEFAULT</button></div>
+      </div>
+    </div>
+
+  </main>
+
+  <div id="rotate">Turn your phone upright to play<br><small>or connect a controller for TV mode</small></div>
+
+  <script src="js/config.js?v=5"></script>
+  <script src="js/story.js?v=5"></script>
+  <script src="js/levels.js?v=5"></script>
+  <script src="js/sprites.js?v=5"></script>
+  <script src="js/engine.js?v=5"></script>
+  <script src="js/world.js?v=5"></script>
+  <script src="js/entities.js?v=5"></script>
+  <script src="js/bosses.js?v=5"></script>
+  <script src="js/game.js?v=5"></script>
+  <script>
+    (function () {
+      const fonts = ['700 10px "Baloo 2"', '800 10px "Baloo 2"', '600 10px "Baloo 2"', '10px "Koradin"'];
+      const ready = document.fonts ? Promise.all(fonts.map(f => document.fonts.load(f, 'Kofi Kese'))).catch(() => {}) : Promise.resolve();
+      const timeout = new Promise(r => setTimeout(r, 2500));
+      const loadTick = setInterval(() => { document.getElementById('loading').textContent = 'Loading ' + Math.round((KK.Sprites.progress || 0) * 100) + '%'; }, 150);
+      if (/[?&]tv\b/.test(location.search)) document.body.classList.add('tv');
+      Promise.race([ready, timeout]).then(() => null).then(() => {
+        // artwork loads in the background; anything not loaded yet shows as a coloured shape
+        KK.Sprites.load(KK.SPRITE_DEFS);
+        clearInterval(loadTick); document.getElementById('loading').hidden = true;
+        const game = new KK.Game(document.getElementById('game'));
+        KK.bindButtons(document.getElementById('app'));
+        KK.bindJoystick(document.getElementById('joy'), document.querySelector('#joy .knob'));
+        KK.UI.buildBeta(); KK.UI.buildControls();
+        // a controller on a landscape screen switches to TV mode automatically
+        KK.onPadChange = (on) => {
+          const hint = document.getElementById('padHint'); hint.hidden = !on; setTimeout(() => hint.hidden = true, 2500);
+          if (on && innerWidth > innerHeight) KK.UI.setTV(true);
+        };
+        const fit = () => game.resize();
+        if (window.ResizeObserver) new ResizeObserver(fit).observe(document.getElementById('screen'));
+        window.addEventListener('orientationchange', () => setTimeout(fit, 200));
+      });
+      document.addEventListener('touchmove', e => { if (e.target.closest('#app')) e.preventDefault(); }, { passive: false });
+    })();
+  </script>
+</body>
+</html>
