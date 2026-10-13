@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=6">
+<link rel="stylesheet" href="css/style.css?v=7">
 </head>
 <body>
   <button id="betaBtn" hidden>BETA</button>
@@ -64,18 +64,18 @@
 
   <div id="rotate">Turn your phone upright to play<br><small>or connect a controller for TV mode</small></div>
 
-  <script src="js/config.js?v=6"></script>
-  <script src="js/story.js?v=6"></script>
-  <script src="js/levels.js?v=6"></script>
-  <script src="js/sprites.js?v=6"></script>
-  <script src="js/engine.js?v=6"></script>
-  <script src="js/world.js?v=6"></script>
-  <script src="js/entities.js?v=6"></script>
-  <script src="js/bosses.js?v=6"></script>
-  <script src="js/game.js?v=6"></script>
+  <script src="js/config.js?v=7"></script>
+  <script src="js/story.js?v=7"></script>
+  <script src="js/levels.js?v=7"></script>
+  <script src="js/sprites.js?v=7"></script>
+  <script src="js/engine.js?v=7"></script>
+  <script src="js/world.js?v=7"></script>
+  <script src="js/entities.js?v=7"></script>
+  <script src="js/bosses.js?v=7"></script>
+  <script src="js/game.js?v=7"></script>
   <script>
     (function () {
-      const fonts = ['700 10px "Baloo 2"', '800 10px "Baloo 2"', '600 10px "Baloo 2"', '10px "Koradin"'];
+      const fonts = ['700 10px "Baloo 2"', '800 10px "Baloo 2"', '600 10px "Baloo 2"', '10px "Koradin"', '10px "KoradinPixel"'];
       const ready = document.fonts ? Promise.all(fonts.map(f => document.fonts.load(f, 'Kofi Kese'))).catch(() => {}) : Promise.resolve();
       const timeout = new Promise(r => setTimeout(r, 2500));
       const loadTick = setInterval(() => { document.getElementById('loading').textContent = 'Loading ' + Math.round((KK.Sprites.progress || 0) * 100) + '%'; }, 150);

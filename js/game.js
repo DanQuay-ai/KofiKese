@@ -7,7 +7,7 @@
   const BASE_W = C.VIEW_W;
   let VW = BASE_W, VH = 300;            // base view in world pixels (portrait); updated on resize
   const FONT = '"Baloo 2", system-ui, sans-serif';
-  const FONT_KR = '"Koradin", serif';
+  const FONT_KR = '"KoradinPixel", "Koradin", serif';
   const SAVE_KEY = 'kofikese_save_v2';
   const DIFFS = ['easy', 'normal', 'hard'];
   const COL = { life: '#e8443a', stamina: '#ff9a2a', power: '#3a9cff', gold: '#ffd23f', cream: '#f5e6c8', muted: '#b39b7a' };
@@ -693,7 +693,7 @@
       this.panel(ctx, 14, top, VW - 28, 66);
       this.kente(ctx, 18, top + 4, VW - 36);
       this.text(ctx, 'KOFI KESE', VW / 2, top + 11, { size: 26, align: 'center', color: COL.gold, weight: 800, stroke: '#5a2a00' });
-      this.text(ctx, 'Kofi Kese', VW / 2, top + 38, { size: 17, font: FONT_KR, align: 'center', color: COL.cream, stroke: null });
+      this.text(ctx, 'Kofi Kese', VW / 2, top + 38, { size: 21.43, font: FONT_KR, align: 'center', color: COL.cream, stroke: null });
       this.kente(ctx, 18, top + 58, VW - 36);
       // Kofitia with his sword, big, on a glowing step
       const ky = top + 140, sc = 2.6, key = KK.weapon === 'palm' ? 'kofitia_palm' : 'kofitia_afenakwa';
@@ -844,7 +844,7 @@
         const b = bb.target, w = VW - 28, x = 14, y = 76;
         const name = bb.label ? KK.CHARACTERS[bb.label].name : bb.name;
         this.panel(ctx, x - 6, y - 26, w + 12, 38);
-        this.text(ctx, name, x, y - 23, { size: 12, font: FONT_KR, color: COL.gold, stroke: null });
+        this.text(ctx, name, x, y - 23, { size: 14.29, font: FONT_KR, color: COL.gold, stroke: null });
         this.text(ctx, name.toUpperCase(), x + w, y - 19, { size: 6, color: COL.muted, align: 'right', weight: 700, stroke: null });
         this.kente(ctx, x, y - 7, w);
         ctx.fillStyle = '#1a0d07'; ctx.fillRect(x, y, w, 6);
@@ -896,11 +896,11 @@
         // name plate: Kradin name on a kente band
         const nx = px + ps + 7;
         ctx.font = `700 5.5px ${FONT}`; const lw = ctx.measureText(ch.name.toUpperCase()).width;
-        ctx.font = `13px ${FONT_KR}`; const kw = ctx.measureText(ch.name).width, room = x + w - 9 - lw - 4 - nx;
-        const ks = kw > room ? Math.max(8, 13 * room / kw) : 13;
-        this.text(ctx, ch.name, nx, y + 6 + (13 - ks) * 0.7, { size: ks, font: FONT_KR, color: COL.gold, stroke: 'rgba(0,0,0,0.6)' });
+        ctx.font = `14.29px ${FONT_KR}`; const kw = ctx.measureText(ch.name).width, room = x + w - 9 - lw - 4 - nx;
+        const ks = 14.29;
+        this.text(ctx, ch.name, nx, y + 5 + (14.29 - ks) * 0.7, { size: ks, font: FONT_KR, color: COL.gold, stroke: 'rgba(0,0,0,0.6)' });
         this.kente(ctx, nx, y + 22, x + w - nx - 8);
-        this.text(ctx, ch.name.toUpperCase(), x + w - 9, y + 7.5, { size: 5.5, color: COL.muted, align: 'right', weight: 700, stroke: null });
+        if (kw <= room) this.text(ctx, ch.name.toUpperCase(), x + w - 9, y + 7.5, { size: 5.5, color: COL.muted, align: 'right', weight: 700, stroke: null });
         tx = nx; ty = y + 30;
       }
       this.wrapText(ctx, line.t.slice(0, Math.floor(d.chars)), tx, ty, x + w - tx - 10, 11.5, { size: 9.5, color: COL.cream, stroke: null, weight: 600 });
@@ -948,7 +948,7 @@
         ctx.fillStyle = '#ffd23f'; ctx.fillRect(VW / 2 - 1.5, y, 3, 18); ctx.fillStyle = '#7a4d14'; ctx.fillRect(VW / 2 - 4, y + (E.caught ? 14 : 0), 8, 2);
         if (!E.caught) for (let i = 0; i < 4; i++) { ctx.fillStyle = 'rgba(255,230,120,0.6)'; ctx.fillRect(VW / 2 - 1 + KK.rand(-2, 2), y - 6 - i * 6, 2, 3); }
       }
-      if (E.theEnd) { ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(0, VH * 0.3, VW, 56); this.text(ctx, 'THE END', VW / 2, VH * 0.3 + 8, { size: 18, align: 'center', color: COL.gold, weight: 800 }); this.text(ctx, 'Kofi Kese', VW / 2, VH * 0.3 + 30, { size: 14, font: FONT_KR, align: 'center', color: '#fff', stroke: null }); }
+      if (E.theEnd) { ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(0, VH * 0.3, VW, 56); this.text(ctx, 'THE END', VW / 2, VH * 0.3 + 8, { size: 18, align: 'center', color: COL.gold, weight: 800 }); this.text(ctx, 'Kofi Kese', VW / 2, VH * 0.3 + 30, { size: 14.29, font: FONT_KR, align: 'center', color: '#fff', stroke: null }); }
       if (this.dialog) this.drawDialog(ctx);
     }
     drawScore(ctx) {

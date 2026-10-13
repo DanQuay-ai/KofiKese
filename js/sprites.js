@@ -665,10 +665,10 @@ KK.SPRITE_DEFS = {
    }
   },
   "barafo": {
-   "w": 1408,
-   "h": 640,
+   "w": 1280,
+   "h": 832,
    "body": 432,
-   "base": 24,
+   "base": 64,
    "pixel": true,
    "anims": {
     "idle": {

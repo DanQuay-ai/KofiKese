@@ -3,6 +3,7 @@
    TV mode (body.tv): full-screen landscape, no touch controls.
    ============================================================= */
 @font-face { font-family: 'Koradin'; src: url('../assets/fonts/Koradin.otf') format('opentype'); font-display: block; }
+@font-face { font-family: 'KoradinPixel'; src: url('../assets/fonts/KoradinPixel.otf') format('opentype'); font-display: block; }
 
 :root {
   color-scheme: dark;
